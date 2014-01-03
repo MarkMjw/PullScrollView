@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.6.+'
+        classpath 'com.android.tools.build:gradle:0.7.+'
     }
 }
 apply plugin: 'android'
@@ -15,6 +15,7 @@ repositories {
 android {
     compileSdkVersion 18
     buildToolsVersion "18.1.1"
+	compileOptions.encoding = "UTF-8"
 
     defaultConfig {
         minSdkVersion 10
@@ -22,9 +23,3 @@ android {
     }
 }
 
-dependencies {
-}
-
-tasks.withType(Compile) {
-    options.encoding = "UTF-8"
-}
