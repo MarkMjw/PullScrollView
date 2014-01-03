@@ -20,6 +20,8 @@ mScrollView.init(mHeadImg);
 ```
 
 ##Screenshots
-![Screenshot 0](http://git.oschina.net/xiangmao/PullScrollView/raw/master/Screenshots/0.png)
-![Screenshot 1](http://git.oschina.net/xiangmao/PullScrollView/raw/master/Screenshots/1.png)
-![Screenshot 2](http://git.oschina.net/xiangmao/PullScrollView/raw/master/Screenshots/2.png)
+![Screenshot 0](https://raw.github.com/MarkMjw/PullScrollView/master/Screenshots/0.png)
+
+![Screenshot 1](https://raw.github.com/MarkMjw/PullScrollView/master/Screenshots/1.png)
+
+![Screenshot 2](https://raw.github.com/MarkMjw/PullScrollView/master/Screenshots/2.png)
