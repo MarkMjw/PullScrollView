@@ -2,7 +2,7 @@ apply plugin: 'android'
 
 android {
     compileSdkVersion 18
-    buildToolsVersion "19.0.2"
+    buildToolsVersion "19.0.3"
 	compileOptions.encoding = "UTF-8"
 
     defaultConfig {
