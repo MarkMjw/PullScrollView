@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.ScrollView;
-import com.markmao.pullscrollview.util.PixelUtil;
 
 /**
  * 自定义ScrollView
@@ -80,7 +79,7 @@ public class PullScrollView extends ScrollView {
      */
     public void init(ImageView imageView) {
         mHeadImage = imageView;
-        mHeadImageH = PixelUtil.dp2px(94);
+        mHeadImageH = 94;
     }
 
     /**

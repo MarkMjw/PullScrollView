@@ -3,11 +3,15 @@ apply plugin: 'android'
 android {
     compileSdkVersion 18
     buildToolsVersion "19.0.3"
-	compileOptions.encoding = "UTF-8"
+    compileOptions.encoding = "UTF-8"
 
     defaultConfig {
         minSdkVersion 10
-        targetSdkVersion 19
+        compileSdkVersion 19
     }
 }
+dependencies {
+    compile 'com.android.support:appcompat-v7:19.+'
+}
+
 
