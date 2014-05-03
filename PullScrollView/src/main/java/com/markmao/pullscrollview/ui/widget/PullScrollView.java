@@ -12,7 +12,7 @@ import android.widget.ScrollView;
 /**
  * 自定义ScrollView
  *
- * @author MarkMjw
+ * @author markmjw
  * @date 2013-09-13
  */
 public class PullScrollView extends ScrollView {
@@ -52,9 +52,13 @@ public class PullScrollView extends ScrollView {
     /** 状态变化时的监听器. */
     private OnTurnListener mOnTurnListener;
 
-    /** 状态：上部，下部，默认. */
     private enum State {
-        UP, DOWN, NORMAL
+        /**顶部*/
+        UP,
+        /**底部*/
+        DOWN,
+        /**正常*/
+        NORMAL
     }
 
     /** 状态. */
@@ -91,10 +95,6 @@ public class PullScrollView extends ScrollView {
         mOnTurnListener = turnListener;
     }
 
-    /**
-     * 根据 XML 生成视图工作完成.该函数在生成视图的最后调用，在所有子视图添加完之后.
-     * 即使子类覆盖了 onFinishInflate 方法，也应该调用父类的方法，使该方法得以执行.
-     */
     @Override
     protected void onFinishInflate() {
         if (getChildCount() > 0) {
@@ -222,21 +222,18 @@ public class PullScrollView extends ScrollView {
         }
     }
 
-    /**
-     * 回滚动画
-     */
     private void rollBackAnimation() {
-        TranslateAnimation image_Anim = new TranslateAnimation(0, 0,
+        TranslateAnimation tranAnim = new TranslateAnimation(0, 0,
                 Math.abs(mInitTop - mCurrentTop), 0);
-        image_Anim.setDuration(200);
-        mHeadImage.startAnimation(image_Anim);
+        tranAnim.setDuration(200);
+        mHeadImage.startAnimation(tranAnim);
 
         mHeadImage.layout(mHeadImage.getLeft(), mInitTop, mHeadImage.getRight(), mInitBottom);
 
         // 开启移动动画
-        TranslateAnimation inner_Anim = new TranslateAnimation(0, 0, mChildView.getTop(), mRect.top);
-        inner_Anim.setDuration(200);
-        mChildView.startAnimation(inner_Anim);
+        TranslateAnimation innerAnim = new TranslateAnimation(0, 0, mChildView.getTop(), mRect.top);
+        innerAnim.setDuration(200);
+        mChildView.startAnimation(innerAnim);
         mChildView.layout(mRect.left, mRect.top, mRect.right, mRect.bottom);
 
         mRect.setEmpty();
@@ -257,7 +254,7 @@ public class PullScrollView extends ScrollView {
     /**
      * 执行翻转
      *
-     * @author MarkMjw
+     * @author markmjw
      */
     public interface OnTurnListener {
         /**

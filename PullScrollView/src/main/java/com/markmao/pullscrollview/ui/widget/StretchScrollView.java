@@ -68,7 +68,7 @@ public class StretchScrollView extends ScrollView {
     }
 
     private void init() {
-        // remove scroll mode
+        // set scroll mode
         setOverScrollMode(OVER_SCROLL_NEVER);
     }
 
