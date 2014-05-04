@@ -28,10 +28,10 @@ public class PullScrollView extends ScrollView {
     /** 头部图片显示高度. */
     private int mHeaderVisibleHeight;
 
-    /** 孩子View. */
+    /** ScrollView的content view. */
     private View mContentView;
 
-    /** ScrollView的Content View矩形. */
+    /** ScrollView的content view矩形. */
     private Rect mContentRect = new Rect();
 
     /** 首次点击的Y坐标. */
@@ -42,6 +42,9 @@ public class PullScrollView extends ScrollView {
 
     /** 是否开始移动. */
     private boolean isMoving = false;
+
+    /** 是否移动到顶部位置. */
+    private boolean isTop = false;
 
     /** 头部图片初始顶部和底部. */
     private int mInitTop, mInitBottom;
@@ -62,7 +65,7 @@ public class PullScrollView extends ScrollView {
     }
 
     /** 状态. */
-    private State state = State.NORMAL;
+    private State mState = State.NORMAL;
 
     public PullScrollView(Context context) {
         super(context);
@@ -106,9 +109,8 @@ public class PullScrollView extends ScrollView {
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
         super.onScrollChanged(l, t, oldl, oldt);
 
-        // 当滚动到顶部时，将状态设置为正常，避免先向上拖动再向下拖动到顶端后首次触摸不响应的问题
         if (getScrollY() == 0) {
-            state = State.NORMAL;
+            isTop = true;
         }
     }
 
@@ -142,9 +144,7 @@ public class PullScrollView extends ScrollView {
 
         switch (action) {
             case MotionEvent.ACTION_MOVE:
-                float deltaY = event.getY() - mTouchDownY;
-
-                doActionMove(deltaY);
+                doActionMove(event);
                 break;
 
             case MotionEvent.ACTION_UP:
@@ -154,7 +154,7 @@ public class PullScrollView extends ScrollView {
                 }
 
                 if (getScrollY() == 0) {
-                    state = State.NORMAL;
+                    mState = State.NORMAL;
                 }
 
                 isMoving = false;
@@ -169,23 +169,36 @@ public class PullScrollView extends ScrollView {
     /**
      * 执行移动动画
      *
-     * @param deltaY
+     * @param event
      */
-    private void doActionMove(float deltaY) {
-        // 对于首次Touch操作要判断方位：UP OR DOWN
-        if (deltaY < 0 && state == State.NORMAL) {
-            state = State.UP;
-        } else if (deltaY > 0 && state == State.NORMAL) {
-            state = State.DOWN;
+    private void doActionMove(MotionEvent event) {
+        // 当滚动到顶部时，将状态设置为正常，避免先向上拖动再向下拖动到顶端后首次触摸不响应的问题
+        if (getScrollY() == 0) {
+            mState = State.NORMAL;
+
+            // 滑动经过顶部初始位置时，修正Touch down的坐标为当前Touch点的坐标
+            if (isTop) {
+                isTop = false;
+                mTouchDownY = event.getY();
+            }
         }
 
-        if (state == State.UP) {
+        float deltaY = event.getY() - mTouchDownY;
+
+        // 对于首次Touch操作要判断方位：UP OR DOWN
+        if (deltaY < 0 && mState == State.NORMAL) {
+            mState = State.UP;
+        } else if (deltaY > 0 && mState == State.NORMAL) {
+            mState = State.DOWN;
+        }
+
+        if (mState == State.UP) {
             deltaY = deltaY < 0 ? deltaY : 0;
 
             isMoving = false;
             mEnableTouch = false;
 
-        } else if (state == State.DOWN) {
+        } else if (mState == State.DOWN) {
             if (getScrollY() <= deltaY) {
                 mEnableTouch = true;
                 isMoving = true;
@@ -202,17 +215,17 @@ public class PullScrollView extends ScrollView {
             }
 
             // 计算header移动距离(手势移动的距离*阻尼系数*0.5)
-            float bgMoveH = deltaY * 0.5f * SCROLL_RATIO;
-            mCurrentTop = (int) (mInitTop + bgMoveH);
-            mCurrentBottom = (int) (mInitBottom + bgMoveH);
+            float headerMoveHeight = deltaY * 0.5f * SCROLL_RATIO;
+            mCurrentTop = (int) (mInitTop + headerMoveHeight);
+            mCurrentBottom = (int) (mInitBottom + headerMoveHeight);
 
             // 计算content移动距离(手势移动的距离*阻尼系数)
-            float childMoveH = deltaY * SCROLL_RATIO;
+            float contentMoveHeight = deltaY * SCROLL_RATIO;
 
             // 修正content移动的距离，避免超过header的底边缘
             int headerBottom = mCurrentBottom - mHeaderVisibleHeight;
-            int top = (int) (mContentRect.top + childMoveH);
-            int bottom = (int) (mContentRect.bottom + childMoveH);
+            int top = (int) (mContentRect.top + contentMoveHeight);
+            int bottom = (int) (mContentRect.bottom + contentMoveHeight);
 
             if (top <= headerBottom) {
                 // 移动content view
@@ -254,7 +267,7 @@ public class PullScrollView extends ScrollView {
     }
 
     /**
-     * 执行翻转
+     * 翻转事件监听器
      *
      * @author markmjw
      */
