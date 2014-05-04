@@ -17,22 +17,22 @@ import android.widget.ScrollView;
  */
 public class PullScrollView extends ScrollView {
     /** 阻尼系数,越小阻力就越大. */
-    private static final float SCROLL_RATIO = 0.35f;
+    private static final float SCROLL_RATIO = 0.5f;
 
     /** 滑动至翻转的距离. */
-    private static final int TURN_DISTANCE = 50;
+    private static final int TURN_DISTANCE = 100;
 
     /** 头部图片. */
-    private ImageView mHeadImage;
+    private ImageView mHeader;
 
     /** 头部图片显示高度. */
-    private int mHeadImageH;
+    private int mHeaderVisibleHeight;
 
     /** 孩子View. */
-    private View mChildView;
+    private View mContentView;
 
-    /** ScrollView的孩子View矩形. */
-    private Rect mRect = new Rect();
+    /** ScrollView的Content View矩形. */
+    private Rect mContentRect = new Rect();
 
     /** 首次点击的Y坐标. */
     private float mTouchDownY;
@@ -82,8 +82,8 @@ public class PullScrollView extends ScrollView {
      * @param imageView 头部图片
      */
     public void init(ImageView imageView) {
-        mHeadImage = imageView;
-        mHeadImageH = 94;
+        mHeader = imageView;
+        mHeaderVisibleHeight = 100;
     }
 
     /**
@@ -98,7 +98,7 @@ public class PullScrollView extends ScrollView {
     @Override
     protected void onFinishInflate() {
         if (getChildCount() > 0) {
-            mChildView = getChildAt(0);
+            mContentView = getChildAt(0);
         }
     }
 
@@ -113,17 +113,23 @@ public class PullScrollView extends ScrollView {
     }
 
     @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            mTouchDownY = ev.getY();
+            mCurrentTop = mInitTop = mHeader.getTop();
+            mCurrentBottom = mInitBottom = mHeader.getBottom();
+        }
+        return super.onInterceptTouchEvent(ev);
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        if (mChildView != null) {
+        if (mContentView != null) {
             doTouchEvent(ev);
         }
 
         // 禁止控件本身的滑动.
-        if (mEnableTouch) {
-            return true;
-        } else {
-            return super.onTouchEvent(ev);
-        }
+        return mEnableTouch || super.onTouchEvent(ev);
     }
 
     /**
@@ -135,12 +141,6 @@ public class PullScrollView extends ScrollView {
         int action = event.getAction();
 
         switch (action) {
-            case MotionEvent.ACTION_DOWN:
-                mTouchDownY = event.getY();
-                mCurrentTop = mInitTop = mHeadImage.getTop();
-                mCurrentBottom = mInitBottom = mHeadImage.getBottom();
-                break;
-
             case MotionEvent.ACTION_MOVE:
                 float deltaY = event.getY() - mTouchDownY;
 
@@ -194,31 +194,33 @@ public class PullScrollView extends ScrollView {
         }
 
         if (isMoving) {
-            // 初始化头部矩形
-            if (mRect.isEmpty()) {
+            // 初始化content view矩形
+            if (mContentRect.isEmpty()) {
                 // 保存正常的布局位置
-                mRect.set(mChildView.getLeft(), mChildView.getTop(), mChildView.getRight(),
-                        mChildView.getBottom());
+                mContentRect.set(mContentView.getLeft(), mContentView.getTop(), mContentView.getRight(),
+                        mContentView.getBottom());
             }
 
-            // 移动背景图(手势移动的距离*阻尼系数*0.5)
+            // 计算header移动距离(手势移动的距离*阻尼系数*0.5)
             float bgMoveH = deltaY * 0.5f * SCROLL_RATIO;
             mCurrentTop = (int) (mInitTop + bgMoveH);
             mCurrentBottom = (int) (mInitBottom + bgMoveH);
-            mHeadImage.layout(mHeadImage.getLeft(), mCurrentTop, mHeadImage.getRight(),
-                    mCurrentBottom);
 
-            // 移动布局(手势移动的距离*阻尼系数)
+            // 计算content移动距离(手势移动的距离*阻尼系数)
             float childMoveH = deltaY * SCROLL_RATIO;
 
-            // 修正移动的距离，避免超过图片的底边缘
-            int top = mCurrentBottom - mHeadImageH;
-            if (mRect.top + childMoveH > top) {
-                childMoveH -= mRect.top + childMoveH - top;
-            }
+            // 修正content移动的距离，避免超过header的底边缘
+            int headerBottom = mCurrentBottom - mHeaderVisibleHeight;
+            int top = (int) (mContentRect.top + childMoveH);
+            int bottom = (int) (mContentRect.bottom + childMoveH);
 
-            mChildView.layout(mRect.left, (int) (mRect.top + childMoveH),
-                    mRect.right, (int) (mRect.bottom + childMoveH));
+            if (top <= headerBottom) {
+                // 移动content view
+                mContentView.layout(mContentRect.left, top, mContentRect.right, bottom);
+
+                // 移动header view
+                mHeader.layout(mHeader.getLeft(), mCurrentTop, mHeader.getRight(), mCurrentBottom);
+            }
         }
     }
 
@@ -226,17 +228,17 @@ public class PullScrollView extends ScrollView {
         TranslateAnimation tranAnim = new TranslateAnimation(0, 0,
                 Math.abs(mInitTop - mCurrentTop), 0);
         tranAnim.setDuration(200);
-        mHeadImage.startAnimation(tranAnim);
+        mHeader.startAnimation(tranAnim);
 
-        mHeadImage.layout(mHeadImage.getLeft(), mInitTop, mHeadImage.getRight(), mInitBottom);
+        mHeader.layout(mHeader.getLeft(), mInitTop, mHeader.getRight(), mInitBottom);
 
         // 开启移动动画
-        TranslateAnimation innerAnim = new TranslateAnimation(0, 0, mChildView.getTop(), mRect.top);
+        TranslateAnimation innerAnim = new TranslateAnimation(0, 0, mContentView.getTop(), mContentRect.top);
         innerAnim.setDuration(200);
-        mChildView.startAnimation(innerAnim);
-        mChildView.layout(mRect.left, mRect.top, mRect.right, mRect.bottom);
+        mContentView.startAnimation(innerAnim);
+        mContentView.layout(mContentRect.left, mContentRect.top, mContentRect.right, mContentRect.bottom);
 
-        mRect.setEmpty();
+        mContentRect.setEmpty();
 
         // 回调监听器
         if (mCurrentTop > mInitTop + TURN_DISTANCE && mOnTurnListener != null){
@@ -248,7 +250,7 @@ public class PullScrollView extends ScrollView {
      * 是否需要开启动画
      */
     private boolean isNeedAnimation() {
-        return !mRect.isEmpty() && isMoving;
+        return !mContentRect.isEmpty() && isMoving;
     }
 
     /**

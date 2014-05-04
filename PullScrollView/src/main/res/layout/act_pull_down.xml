@@ -8,7 +8,7 @@
     <ImageView
         android:id="@+id/background_img"
         android:layout_width="match_parent"
-        android:layout_height="275dp"
+        android:layout_height="300dp"
         android:layout_marginTop="-100dp"
         android:contentDescription="@null"
         android:scaleType="fitXY"
@@ -30,7 +30,7 @@
                 android:id="@+id/scroll_view_head"
                 android:layout_width="match_parent"
                 android:layout_height="112dp"
-                android:layout_marginTop="80dp"
+                android:layout_marginTop="100dp"
                 android:background="@color/transparent"
                 android:orientation="vertical">
 

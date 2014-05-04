@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.markmao.pullscrollview.R;
 import com.markmao.pullscrollview.ui.widget.PullScrollView;
@@ -67,6 +69,14 @@ public class PulldownViewActivity extends Activity implements PullScrollView.OnT
             } else {
                 tableRow.setBackgroundColor(Color.WHITE);
             }
+
+            final int n = i;
+            tableRow.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(PulldownViewActivity.this, "Click item " + n, Toast.LENGTH_SHORT).show();
+                }
+            });
 
             mMainLayout.addView(tableRow);
         }
