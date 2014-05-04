@@ -1,13 +1,15 @@
 package com.markmao.pullscrollview.ui.widget;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.TranslateAnimation;
-import android.widget.ImageView;
 import android.widget.ScrollView;
+
+import com.markmao.pullscrollview.R;
 
 /**
  * 自定义ScrollView
@@ -22,10 +24,13 @@ public class PullScrollView extends ScrollView {
     /** 滑动至翻转的距离. */
     private static final int TURN_DISTANCE = 100;
 
-    /** 头部图片. */
-    private ImageView mHeader;
+    /** 头部view. */
+    private View mHeader;
 
-    /** 头部图片显示高度. */
+    /** 头部view高度. */
+    private int mHeaderHeight;
+
+    /** 头部view显示高度. */
     private int mHeaderVisibleHeight;
 
     /** ScrollView的content view. */
@@ -69,24 +74,42 @@ public class PullScrollView extends ScrollView {
 
     public PullScrollView(Context context) {
         super(context);
+        init(context, null);
     }
 
     public PullScrollView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init(context, attrs);
     }
 
     public PullScrollView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        init(context, attrs);
+    }
+
+    private void init(Context context, AttributeSet attrs) {
+        // set scroll mode
+        setOverScrollMode(OVER_SCROLL_NEVER);
+
+        if (null != attrs) {
+            TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.PullScrollView);
+
+            if (ta != null) {
+                mHeaderHeight = (int) ta.getDimension(R.styleable.PullScrollView_headerHeight, -1);
+                mHeaderVisibleHeight = (int) ta.getDimension(R.styleable
+                        .PullScrollView_headerVisibleHeight, -1);
+                ta.recycle();
+            }
+        }
     }
 
     /**
-     * 初始化
+     * 设置Header
      *
-     * @param imageView 头部图片
+     * @param view
      */
-    public void init(ImageView imageView) {
-        mHeader = imageView;
-        mHeaderVisibleHeight = 100;
+    public void setHeader(View view) {
+        mHeader = view;
     }
 
     /**

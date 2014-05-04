@@ -42,9 +42,8 @@ public class PulldownViewActivity extends Activity implements PullScrollView.OnT
 
         mMainLayout = (TableLayout) findViewById(R.id.table_layout);
 
+        mScrollView.setHeader(mHeadImg);
         mScrollView.setOnTurnListener(this);
-
-        mScrollView.init(mHeadImg);
     }
 
     public void showTable() {

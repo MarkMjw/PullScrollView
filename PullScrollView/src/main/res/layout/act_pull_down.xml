@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
@@ -12,12 +13,14 @@
         android:layout_marginTop="-100dp"
         android:contentDescription="@null"
         android:scaleType="fitXY"
-        android:src="@drawable/page_cover_car_background" />
+        android:src="@drawable/scrollview_header" />
 
     <com.markmao.pullscrollview.ui.widget.PullScrollView
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:headerHeight="300dp"
+        app:headerVisibleHeight="100dp"
         android:fillViewport="true">
 
         <LinearLayout
