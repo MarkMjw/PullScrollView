@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         minSdkVersion 10
-        compileSdkVersion 19
+        targetSdkVersion 19
     }
 }
 dependencies {
