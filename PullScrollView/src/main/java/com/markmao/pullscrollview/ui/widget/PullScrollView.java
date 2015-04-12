@@ -226,7 +226,7 @@ public class PullScrollView extends ScrollView {
                 mEnableTouch = true;
                 isMoving = true;
             }
-            deltaY = deltaY < 0 ? 0 : deltaY;
+            deltaY = deltaY < 0 ? 0 : (deltaY > mHeaderHeight ? mHeaderHeight : deltaY);
         }
 
         if (isMoving) {
