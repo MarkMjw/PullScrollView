@@ -2,6 +2,7 @@ package com.markmao.pullscrollview.ui.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -40,7 +41,7 @@ public class PullScrollView extends ScrollView {
     private Rect mContentRect = new Rect();
 
     /** 首次点击的Y坐标. */
-    private float mTouchDownY;
+    private PointF mStartPoint = new PointF();
 
     /** 是否关闭ScrollView的滑动. */
     private boolean mEnableTouch = false;
@@ -140,9 +141,15 @@ public class PullScrollView extends ScrollView {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            mTouchDownY = ev.getY();
+            mStartPoint.set(ev.getX(), ev.getY());
             mCurrentTop = mInitTop = mHeader.getTop();
             mCurrentBottom = mInitBottom = mHeader.getBottom();
+        } else if(ev.getAction() == MotionEvent.ACTION_MOVE){
+            float deltaY = Math.abs(ev.getY() - mStartPoint.y);
+            if(deltaY > 10 && deltaY > Math.abs(ev.getX() - mStartPoint.x)) {
+                onTouchEvent(ev);
+                return true;
+            }
         }
         return super.onInterceptTouchEvent(ev);
     }
@@ -202,11 +209,11 @@ public class PullScrollView extends ScrollView {
             // 滑动经过顶部初始位置时，修正Touch down的坐标为当前Touch点的坐标
             if (isTop) {
                 isTop = false;
-                mTouchDownY = event.getY();
+                mStartPoint.y = event.getY();
             }
         }
 
-        float deltaY = event.getY() - mTouchDownY;
+        float deltaY = event.getY() - mStartPoint.y;
 
         // 对于首次Touch操作要判断方位：UP OR DOWN
         if (deltaY < 0 && mState == State.NORMAL) {
