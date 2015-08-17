@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.TranslateAnimation;
@@ -19,6 +20,7 @@ import com.markmao.pullscrollview.R;
  * @date 2013-09-13
  */
 public class PullScrollView extends ScrollView {
+    private static final String LOG_TAG = "PullScrollView";
     /** 阻尼系数,越小阻力就越大. */
     private static final float SCROLL_RATIO = 0.5f;
 
@@ -42,9 +44,6 @@ public class PullScrollView extends ScrollView {
 
     /** 首次点击的Y坐标. */
     private PointF mStartPoint = new PointF();
-
-    /** 是否关闭ScrollView的滑动. */
-    private boolean mEnableTouch = false;
 
     /** 是否开始移动. */
     private boolean isMoving = false;
@@ -140,60 +139,55 @@ public class PullScrollView extends ScrollView {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            mStartPoint.set(ev.getX(), ev.getY());
-            mCurrentTop = mInitTop = mHeader.getTop();
-            mCurrentBottom = mInitBottom = mHeader.getBottom();
-        } else if(ev.getAction() == MotionEvent.ACTION_MOVE){
-            float deltaY = Math.abs(ev.getY() - mStartPoint.y);
-            if(deltaY > 10 && deltaY > Math.abs(ev.getX() - mStartPoint.x)) {
-                onTouchEvent(ev);
-                return true;
-            }
-        }
-        return super.onInterceptTouchEvent(ev);
+        return onTouchEvent(ev) || super.onInterceptTouchEvent(ev);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         if (mContentView != null) {
-            doTouchEvent(ev);
+            int action = ev.getAction();
+            switch (action) {
+                case MotionEvent.ACTION_DOWN:
+                    mStartPoint.set(ev.getX(), ev.getY());
+                    mCurrentTop = mInitTop = mHeader.getTop();
+                    mCurrentBottom = mInitBottom = mHeader.getBottom();
+                    return super.onTouchEvent(ev);
+                case MotionEvent.ACTION_MOVE:
+                    float deltaY = Math.abs(ev.getY() - mStartPoint.y);
+                    if (deltaY > 10 && deltaY > Math.abs(ev.getX() - mStartPoint.x)) {
+                        mHeader.clearAnimation();
+                        mContentView.clearAnimation();
+                        doActionMove(ev);
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                    // 回滚动画
+                    if (isNeedAnimation()) {
+                        rollBackAnimation();
+                    }
+
+                    if (getScrollY() == 0) {
+                        mState = State.NORMAL;
+                    }
+
+                    isMoving = false;
+                    break;
+                default:
+                    break;
+
+            }
         }
 
         // 禁止控件本身的滑动.
-        return mEnableTouch || super.onTouchEvent(ev);
-    }
-
-    /**
-     * 触摸事件处理
-     *
-     * @param event
-     */
-    private void doTouchEvent(MotionEvent event) {
-        int action = event.getAction();
-
-        switch (action) {
-            case MotionEvent.ACTION_MOVE:
-                doActionMove(event);
-                break;
-
-            case MotionEvent.ACTION_UP:
-                // 回滚动画
-                if (isNeedAnimation()) {
-                    rollBackAnimation();
-                }
-
-                if (getScrollY() == 0) {
-                    mState = State.NORMAL;
-                }
-
-                isMoving = false;
-                mEnableTouch = false;
-                break;
-
-            default:
-                break;
+        boolean isHandle = isMoving;
+        if (!isMoving) {
+            try {
+                isHandle = super.onTouchEvent(ev);
+            } catch (Exception e) {
+                Log.w(LOG_TAG, e);
+            }
         }
+        return isHandle;
     }
 
     /**
@@ -226,11 +220,9 @@ public class PullScrollView extends ScrollView {
             deltaY = deltaY < 0 ? deltaY : 0;
 
             isMoving = false;
-            mEnableTouch = false;
 
         } else if (mState == State.DOWN) {
             if (getScrollY() <= deltaY) {
-                mEnableTouch = true;
                 isMoving = true;
             }
             deltaY = deltaY < 0 ? 0 : (deltaY > mHeaderHeight ? mHeaderHeight : deltaY);
