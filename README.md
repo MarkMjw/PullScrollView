@@ -11,10 +11,15 @@ PullScrollView
 ## **使用示例** ##
 
 ```java
+1、
 mScrollView = (PullScrollView) findViewById(R.id.scroll_view);
 mHeadImg = (ImageView) findViewById(R.id.background_img);
 mScrollView.setOnTurnListener(this);
 mScrollView.init(mHeadImg);
+2、
+获取头部View进行修改示例：
+TextView tvHello = (TextView)mHeadImg.findViewById(R.id.tv_hello);
+tvHello.setText("world");
 ```
 
 ##Screenshots
